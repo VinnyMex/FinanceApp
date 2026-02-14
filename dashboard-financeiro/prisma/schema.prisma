@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  whatsapp        String?
+  alertFrequency  Int       @default(1) // dias antes do vencimento
+  accounts        Account[]
+  transactions    Transaction[]
+  budgets         Budget[]
+  insights        Insight[]
+  categories      Category[]
+  notifications   Notification[]
+  createdAt       DateTime  @default(now())
+  
+  // Financial Profile
+  salary           Float    @default(0)
+  foodVoucher      Float    @default(0)
+  transportVoucher Float    @default(0)
+  
+  // Goals
+  goal1            String?
+  goal2            String?
+  goal3            String?
+}
+
+model Account {
+  id            String    @id @default(cuid())
+  name          String
+  type          String    @default("CHECKING") // CHECKING, SAVINGS, INVESTMENT, CASH, CREDIT
+  balance       Float     @default(0)
+  color         String?
+  icon          String?
+  logoUrl       String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  transactions  Transaction[]
+  createdAt     DateTime  @default(now())
+}
+
+model Category {
+  id            String    @id @default(cuid())
+  name          String
+  icon          String?
+  color         String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  transactions  Transaction[]
+  createdAt     DateTime  @default(now())
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  description   String
+  amount        Float
+  date          DateTime
+  type          String    // INCOME, EXPENSE
+  status        String    @default("COMPLETED") // PENDING, COMPLETED, CANCELED
+  frequency     String    @default("VARIABLE") // FIXED, VARIABLE, INSTALLMENT
+  
+  installmentsTotal  Int?
+  currentInstallment Int?
+  recurrenceId       String?
+
+  accountId     String
+  account       Account   @relation(fields: [accountId], references: [id])
+  
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+}
+
+model Budget {
+  id            String    @id @default(cuid())
+  name          String
+  limit         Float
+  spent         Float     @default(0)
+  period        String
+  
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+}
+
+model Insight {
+  id        String   @id @default(cuid())
+  content   String
+  type      String   @default("ADVICE") // ADVICE, WARNING, SUCCESS
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, ALERT, SUCCESS, WARNING
+  read      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
