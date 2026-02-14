@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "PrevisionFinance – Dashboard Financeiro",
   description: "Gerencie suas finanças pessoais com inteligência artificial, relatórios avançados e controle de parcelamentos.",
   manifest: "/manifest.json",
-  themeColor: "#09090b",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
