@@ -40,6 +40,10 @@ export async function updateAccount(accountId: string, data: { name?: string; ty
     const user = await syncUser()
     if (!user) throw new Error("Não autorizado")
 
+    // Verifica propriedade antes de atualizar
+    const existing = await db.account.findUnique({ where: { id: accountId } })
+    if (!existing || existing.userId !== user.id) throw new Error("Conta não encontrada")
+
     const account = await (db as any).account.update({
         where: { id: accountId },
         data
@@ -53,6 +57,10 @@ export async function deleteAccount(accountId: string) {
     const user = await syncUser()
     if (!user) throw new Error("Não autorizado")
 
+    // Verifica propriedade antes de deletar
+    const existing = await db.account.findUnique({ where: { id: accountId } })
+    if (!existing || existing.userId !== user.id) throw new Error("Conta não encontrada")
+
     const txCount = await db.transaction.count({
         where: { accountId, userId: user.id }
     })
@@ -61,7 +69,7 @@ export async function deleteAccount(accountId: string) {
         throw new Error(`Esta conta possui ${txCount} transação(ões). Remova-as primeiro.`)
     }
 
-    await db.account.delete({ where: { id: accountId } })
+    await db.account.delete({ where: { id: accountId, userId: user.id } })
     revalidatePath("/")
     revalidatePath("/wallet")
 }
@@ -70,7 +78,7 @@ export async function getAccountWithTransactions(accountId: string) {
     const user = await syncUser()
     if (!user) throw new Error("Não autorizado")
 
-    return await db.account.findUnique({
+    const account = await db.account.findUnique({
         where: { id: accountId },
         include: {
             transactions: {
@@ -80,4 +88,9 @@ export async function getAccountWithTransactions(accountId: string) {
             }
         }
     })
+
+    // Garante que o usuário só acessa suas próprias contas
+    if (!account || account.userId !== user.id) throw new Error("Conta não encontrada")
+
+    return account
 }

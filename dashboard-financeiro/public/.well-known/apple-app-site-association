@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "SEU_TEAM_ID.com.previsionfinance.app",
+        "paths": ["/*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["SEU_TEAM_ID.com.previsionfinance.app"]
+  }
+}

@@ -3,14 +3,34 @@ const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY
 const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE
 
+// Valida e normaliza número de telefone brasileiro (com ou sem DDI 55)
+// Aceita: +5511999999999, 5511999999999, 11999999999, (11) 9 9999-9999
+function normalizePhoneNumber(phone: string): string | null {
+    const digits = phone.replace(/\D/g, "")
+
+    // Aceita 10-13 dígitos
+    if (digits.length < 10 || digits.length > 13) return null
+
+    // Se não tem DDI, adiciona 55 (Brasil)
+    const withCountry = digits.startsWith("55") ? digits : `55${digits}`
+
+    // Mínimo: 55 + DDD (2) + número (8) = 12 | Máximo: 55 + DDD (2) + 9 + número (8) = 13
+    if (withCountry.length < 12 || withCountry.length > 13) return null
+
+    return withCountry
+}
+
 export async function sendWhatsAppMessage(phone: string, message: string) {
     if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
         console.warn("EvolutionAPI não configurada. Verifique as variáveis de ambiente.")
         return { success: false, error: "EvolutionAPI não configurada" }
     }
 
-    // Normalizar número (remover espaços, hífens, etc.)
-    const cleanPhone = phone.replace(/\D/g, "")
+    const cleanPhone = normalizePhoneNumber(phone)
+    if (!cleanPhone) {
+        console.warn(`Número de WhatsApp inválido: ${phone.substring(0, 4)}****`)
+        return { success: false, error: "Número de telefone inválido" }
+    }
 
     try {
         const evolutionApiUrl = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`

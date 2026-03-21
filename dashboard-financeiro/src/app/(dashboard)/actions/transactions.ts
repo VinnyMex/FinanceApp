@@ -7,16 +7,25 @@ import { z } from "zod"
 import { addMonths } from "date-fns"
 import { sendWhatsAppMessage, formatTransactionAlert } from "@/lib/whatsapp"
 
+const MAX_AMOUNT = 10_000_000 // R$ 10 milhões — limite razoável para finança pessoal
+
 const transactionSchema = z.object({
-    description: z.string().min(1, "Descrição é obrigatória"),
-    amount: z.coerce.number().positive("Valor deve ser maior que zero"),
+    description: z.string().min(1, "Descrição é obrigatória").max(200, "Descrição muito longa"),
+    amount: z.coerce
+        .number()
+        .positive("Valor deve ser maior que zero")
+        .max(MAX_AMOUNT, "Valor excede o limite permitido")
+        .refine((v) => Number((v).toFixed(2)) === v || Math.round(v * 100) / 100 === Math.round(v * 100) / 100, {
+            message: "Valor pode ter no máximo 2 casas decimais",
+        })
+        .transform((v) => Math.round(v * 100) / 100), // Normaliza para 2 casas decimais
     date: z.date(),
     type: z.enum(["INCOME", "EXPENSE"]),
-    categoryName: z.string().min(1, "Categoria é obrigatória"),
-    accountName: z.string().min(1, "Conta é obrigatória"),
+    categoryName: z.string().min(1, "Categoria é obrigatória").max(100, "Nome de categoria muito longo"),
+    accountName: z.string().min(1, "Conta é obrigatória").max(100, "Nome de conta muito longo"),
     frequency: z.enum(["VARIABLE", "FIXED", "INSTALLMENT"]).default("VARIABLE"),
     status: z.enum(["PENDING", "COMPLETED", "CANCELED"]).default("COMPLETED"),
-    installmentsTotal: z.coerce.number().int().min(1).optional(),
+    installmentsTotal: z.coerce.number().int().min(1).max(360, "Máximo de 360 parcelas").optional(),
 })
 
 export async function createTransaction(formData: z.infer<typeof transactionSchema>) {
