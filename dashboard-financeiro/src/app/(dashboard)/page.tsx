@@ -101,7 +101,7 @@ export default async function Home({ searchParams }: HomeProps) {
             {format(baseDate, "MMMM 'de' yyyy", { locale: ptBR })}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Suspense fallback={<div className="h-9 w-[250px] bg-card/50 rounded-md animate-pulse" />}>
             <DashboardFilters />
           </Suspense>

@@ -37,6 +37,7 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: __dirname,
   serverExternalPackages: ["@libsql/client", "@prisma/adapter-libsql"],
   async headers() {
     return [
