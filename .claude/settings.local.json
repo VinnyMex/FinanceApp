@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(curl -s http://localhost:3002)",
+      "Bash(curl:*)",
+      "Bash(taskkill //F //PID 30852)",
+      "mcp__MCP_DOCKER__browser_navigate",
+      "Bash(netstat -ano)",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)"
+    ]
+  }
+}
